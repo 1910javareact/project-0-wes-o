@@ -18,7 +18,7 @@ export function reimbursementDTOtoReimbursement(r: ReimbursementDTO[]): Reimburs
 // take an array of reimbursementDTO's and turn them into an array of objects
 export function multiReimbursementDTOtoReimbursement(rD: ReimbursementDTO[]): Reimbursement[] {
     
-    const result: Reimbursement[] = [];
+    const result = [];
     
     for (const reimbursement of rD) {
         result.push(reimbursementDTOtoReimbursement([reimbursement]));

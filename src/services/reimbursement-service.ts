@@ -2,11 +2,11 @@
 import { Reimbursement } from '../models/reimbursement';
 import { daoGetReimbursementsByStatusId, daoGetReimbursementsByUserId, daoPostReimbursement } from '../repositories/reimbursement-dao';
 
-export async function postReimbursements(post:string){ // :Promise<Reimbursement[]>
+export async function postReimbursements(post):Promise<Reimbursement>{
     //do some processing
     let res = await daoPostReimbursement(post)
     console.log(res + " -RES");
-    //return res
+    return res
 }
 
 export async function getReimbursementsByStatusId(statusid:number):Promise<Reimbursement[]>{
