@@ -59,7 +59,7 @@ app.get('/test', function(req, res, next) {
     }
 });
 
-// Server running on port 1001
-app.listen(1001, ()=>{
+// Server running on port 2001
+app.listen(2001, ()=>{
     console.log('app has started');   
 });

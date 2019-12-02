@@ -1,16 +1,19 @@
 import { PoolClient } from "pg";
 import { connectionPool } from ".";
+import moment from 'moment'
 import { reimbursementDTOtoReimbursement, multiReimbursementDTOtoReimbursement } from "../util/reimbursementDto-to-reimbursement";
 import { Reimbursement } from "../models/reimbursement";
 
-// make a new request
+// make a new Reimbursement
 export async function daoPostReimbursement(post) {
     let client: PoolClient;
     try {
         client = await connectionPool.connect();
         client.query('BEGIN');
-        await client.query('INSERT INTO tool_belt.reimbursement (author, amount, datesubmitted, dateresolved, description, resolver, statusid, typeid) values ($1,$2,$3,$4,$5,null,1,$6)',
-            [post.author, post.amount, 1000, 0, post.description, post.type]); //Data.now()
+        await client.query('INSERT INTO tool_belt.reimbursement(author, amount, datesubmitted, dateresolved, description, resolver, statusid, typeid) values ($1,$2,$3,$4,$5,null,1,$6)',
+            
+        [post.author, post.amount, moment(new Date() ), 0, post.description, post.type]); //Date.now() tbd
+        
         const result = await client.query('SELECT * FROM tool_belt.reimbursement WHERE author = $1 ORDER BY reimbursementid DESC LIMIT 1 OFFSET 0',
             [post.author]);
         client.query('COMMIT');
@@ -51,22 +54,22 @@ export async function daoGetReimbursementsByStatusId(statusId: number): Promise<
         };
     }
 } finally {
-    client.release();
+    client && client.release();
     }
 }    
 
-export async function daoGetReimbursementsByUserId(authorid: number): Promise<Reimbursement> {
+export async function daoGetReimbursementsByUserId(userid: number): Promise<Reimbursement> {
     let client: PoolClient;
     try {
         client = await connectionPool.connect();
-        const result = await client.query('SELECT * FROM tool_belt.reimbursement where author = $1;', [authorid]);
+        const result = await client.query('SELECT * FROM tool_belt.reimbursement where author = $1;', [userid]);
         if (result.rowCount > 0) {
             return reimbursementDTOtoReimbursement(result.rows);
         } else {
             throw 'No Reimbursement';
         }
 
-    } catch (e) {
+    }catch (e) {
         if (e === 'No Reimbursement') {
             throw {
                 status: 404,
@@ -78,5 +81,7 @@ export async function daoGetReimbursementsByUserId(authorid: number): Promise<Re
                 message: 'Internal Server Error'
             };
         }
+    }finally{
+        client && client.release()
     }
 }
