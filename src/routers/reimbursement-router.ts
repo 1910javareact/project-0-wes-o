@@ -5,24 +5,25 @@ import { postReimbursements, getReimbursementsByUserId } from '../services/reimb
 export const reimbursementRouter = express.Router()
 
 //find all reimbursements 
-// let finManageAllReimbursements = reimbursementRouter.post('/reimbursements', async (req, res)=>{
-//     let {username, password} = req.body   
-//     try{
-//         if ((req.session.user.userid == 3) && (!username || !password)){
-//             let post = req.session.user.reimbursement.description
-//             let rms = await postReimbursements(post);
-//             res.json(rms) 
-//             console.log(req.session.user.role + " role");
-//         }
-//         else {
-//             res.status(400).send('Invalid Credentials')
-//         }
-//     }catch{     
-//         //if (req.session.user.userid != 2){
-//         res.status(401).send('The incoming token has expired.')
+
+let finManageAllReimbursements = reimbursementRouter.post('/reimbursements', async (req, res)=>{
+    let {username, password} = req.body   
+    try{
+        if ((req.session.user.userid == 3) && (username || password)){
+            let post = req.session.user.reimbursement.description
+            let rms = await postReimbursements(post);
+            res.json(rms) 
+            console.log(req.session.user.role + " role");
+        }
+        else {
+            res.status(400).send('Invalid Credentials')
+        }
+    }catch{     
+        //if (req.session.user.userid != 2){
+        res.status(401).send('The incoming token has expired.')
         
-//     }    
-// });
+    }    
+});
 
 //find a particular reimbursement by userId --only for Finance-Manager
 let finManageAReimbursement = reimbursementRouter.get('/author/userId/:id', async (req,res)=>{
@@ -40,6 +41,7 @@ let finManageAReimbursement = reimbursementRouter.get('/author/userId/:id', asyn
 });
 
 //Finance Manager 
+
 reimbursementRouter.get('/reimbursements', [ authorization(['Finance-Manager']), finManageAReimbursement ]);
 
 //All Users make reimbursements 
