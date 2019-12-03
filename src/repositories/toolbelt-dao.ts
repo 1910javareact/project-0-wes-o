@@ -98,6 +98,8 @@ export async function daoGetToolbeltById(userid: number): Promise<ToolBelt> {
                 message: 'Internal Server Error'
             };
         }
+    }finally {
+        client && client.release();
     }
 }
 

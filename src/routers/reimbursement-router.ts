@@ -1,43 +1,82 @@
 import express from 'express'
 import { authorization } from '../middleware/auth-middleware'
-import { postReimbursements, getReimbursementsByUserId } from '../services/reimbursement-service';
+import { getReimbursementsByUserId, saveOneReimbursement } from '../services/reimbursement-service';
+import { Reimbursement } from '../models/reimbursement';
 
 export const reimbursementRouter = express.Router()
 
-//All Users make reimbursements 
-reimbursementRouter.post('/reimbursements', authorization(['User']), async (req, res)=>{ 
-    //const {body} = req
-    let post = {
-            author: req.session.user.userid, 
-            amount: req.session.body.amount,
-            description: req.session.body.description,
-            type: req.session.body.type 
-        }
-
-        try{
-            let rms = await postReimbursements(post);
-            res.status(201).json(rms) 
-            console.log(req.session.user.role + " role");
-        }catch{
-            res.status(400).send('Invalid Credentials')
-        }
+//find a particular reimbursement by userId
+reimbursementRouter.get('/author/userId/:userid', [authorization(['Finance-Manager','Admin','User'])], async (req, res)=>{
+    let userId = +req.params.userid
+    if(isNaN(userId)){
+        res.status(400).send('Invalid ID')
+    }
     
-        //if (req.session.user.userid != 2){
-        res.status(401).send('The incoming token has expired.')
-           
-});
+    if(req.session.user.role === 'Finance-Manager'){
+        try{
+            console.log("tryyy " + userId)
+            await getReimbursementsByUserId(userId)
+            let reimbursement = await getReimbursementsByUserId(userId)
 
-//find a particular reimbursement by userId --only for Finance-Manager
-reimbursementRouter.get('/author/userId/:id', authorization(['Finance-Manager']), async (req,res)=>{
-    let id = +req.params.id//from req.params, give me id
-    if(isNaN(id)){
-        res.sendStatus(400)
+            if(reimbursement){
+                console.log(reimbursement)
+                res.status(200).json(reimbursement) 
+            }
+            else{
+                res.status(404).send('Reimbursement does not exist')
+            }
+        }
+        catch(e){
+            console.log(e);
+            res.status(e.status).send(e.message)
+        }
     }else{
         try{
-            let toolbelt = await getReimbursementsByUserId(id)
-            res.json(toolbelt)
+            console.log("try")
+            let reimbursement = await getReimbursementsByUserId(userId)
+            // if(req.session.user.userid === reimbursement.author ){
+            //     res.status(200).json(reimbursement)
+            // }
+            
+            if(req.session.user.userid === reimbursement[0].author ){
+                res.status(200).json(reimbursement) 
+            }else{
+                res.status(404).send('The session token has expired')
+            }
+        }
+        catch(e){
+            console.log(e);
+            res.status(401).send('Invalid Credentials')
+            res.status(e.status).send(e.message)
+        }
+    }
+})
+
+reimbursementRouter.post('',[authorization(['FINANCE MANAGER', 'ADMIN', 'USER'])], async (req, res) => {
+    let {body} = req
+
+    let newReimbursement = new Reimbursement(0,0,0,0,0,'',0,0,0)
+        try{    
+            for(let key in newReimbursement){
+                console.log(key);
+                
+                if(body[key] === undefined){
+                    console.log(body[key]);
+                    
+                    res.status(400).send('All fields are required for a reimbursement')
+                    break
+                }else{
+                    newReimbursement[key] = body[key]
+                }
+            }
+            let update = await saveOneReimbursement(newReimbursement)
+
+            if(update){
+                res.status(201).send('Update') 
+            }else{
+                res.status(404).send('Reimbursement does not exist')
+            }
         }catch(e){
             res.status(e.status).send(e.message)
-        }   
-    }
-});
+        }
+})
