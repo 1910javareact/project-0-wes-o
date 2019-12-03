@@ -12,13 +12,13 @@ export function authorization(authRoles:string[]){
             return
         }
         
-        //for(let userRole of req.session.user.role){
-        //let userRole = req.session.user.role  
-            if(authRoles.includes(req.session.user.role)){
+        for(let userRole of authRoles){
+            userRole = req.session.user.role  
+            if(authRoles.includes(userRole)){
                 isAuth = true
-                res.status(400).send("Thanks for logging in: " + req.session.user.role);
+                //res.send("Thanks for logging in: " + req.session.user.role);
             }
-        
+        }
         if(isAuth){
             next()
         }else{
