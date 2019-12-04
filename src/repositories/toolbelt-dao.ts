@@ -33,20 +33,21 @@ export async function daoGetAllToolbelts(): Promise<ToolBelt[]> {
 }
 
 export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
-
    //insert into the toolbelt table and tool_belt_roles table
    //return the toolbelt object
     let client: PoolClient;
     client = await connectionPool.connect();
     try {
         let roleid = 0;
-        await client.query('BEGIN'); //start a transaction
+        //await client.query('BEGIN'); //start a transaction
 
-        const result = await client.query('INSERT INTO tool_belt.toolbelt (firstname, lastname, email, username, "password") values ($1,$2,$3,$4,$5) RETURNING userid',
+        const result = await client.query('UPDATE tool_belt.toolbelt SET firstname=$1, lastname=$2, email=$3, username=$4, "password"=$5 WHERE toolbelt.userid = 5;',
         [t.firstname, t.lastname, t.email, t.username, t.password]);
+        // INSERT INTO tool_belt.toolbelt (firstname, lastname, email, username, "password") values ($1,$2,$3,$4,$5) RETURNING userid
         // 'for in' loop for key-value matches
         for (const role in t.role) {
-            console.log(role + " role")
+            
+            //console.log(role + " role")
             switch (role) {
                 case 'Admin':
                     roleid = 1;
@@ -57,13 +58,13 @@ export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
                 case 'User':
                     roleid = 3;
                     break;
-                default :
-                    break;
+                // default :
+                //     break;
             }
-        }    
-        await client.query('INSERT INTO tool_belt.tool_belt_roles VALUES($1,$2)',
-            [result.rows[0].userid, roleid ]);
-        
+        } 
+        console.log(roleid + " roool")  
+        await client.query('UPDATE tool_belt.tool_belt_roles set roleid=$1 where tool_belt_roles.userid = $2;',
+            [  roleid, result.rows[0].userid]);
         console.log(roleid + " roleId")
 
         t.userid = result.rows[0].userid;
@@ -115,7 +116,7 @@ export async function daoGetToolbeltByUsernameAndPassword(username: string, pass
         const result = await client.query('SELECT * FROM tool_belt.toolbelt natural join tool_belt.tool_belt_roles natural join tool_belt.roletype WHERE username = $1 and password = $2',
             [username, password]);
         if (result.rowCount === 0) {
-            throw 'No data'; 
+            throw 'No data';
         } else {
             console.log(result.rows);
             return toolbeltDTOtoToolbelt(result.rows);
