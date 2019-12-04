@@ -19,7 +19,6 @@ export async function daoGetAllToolbelts(): Promise<ToolBelt[]> {
                 message: 'Internal Server Error'
             };
         }else{
-            //console.log(result.rows);
             return multiToolbeltDTOConvertor(result.rows);
         }
     } catch (e) {
@@ -33,19 +32,20 @@ export async function daoGetAllToolbelts(): Promise<ToolBelt[]> {
     }
 }
 
-export async function daoSaveOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
+export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
    //insert into the toolbelt table and tool_belt_roles table
    //return the toolbelt object
     let client: PoolClient;
     client = await connectionPool.connect();
     try {
+        let roleid = 0;
         await client.query('BEGIN'); //start a transaction
-        //the returning keyword can be used with insert, to return the values that actually got inserted
+
         const result = await client.query('INSERT INTO tool_belt.toolbelt (firstname, lastname, email, username, "password") values ($1,$2,$3,$4,$5) RETURNING userid',
         [t.firstname, t.lastname, t.email, t.username, t.password]);
         // 'for in' loop for key-value matches
         for (const role in t.role) {
-            let roleid = 0;
+            console.log(role + " rolee")
             switch (role) {
                 case 'Admin':
                     roleid = 1;
@@ -59,9 +59,12 @@ export async function daoSaveOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
                 default :
                     break;
             }
-            await client.query('INSERT INTO tool_belt.tool_belt_roles VALUES($1,$2)',
+        }    
+        await client.query('INSERT INTO tool_belt.tool_belt_roles VALUES($1,$2)',
             [result.rows[0].userid, roleid ]);
-        }
+        
+        console.log(roleid + " roleId")
+
         t.userid = result.rows[0].userid;
         await client.query('COMMIT');
         return t;
@@ -111,7 +114,7 @@ export async function daoGetToolbeltByUsernameAndPassword(username: string, pass
         const result = await client.query('SELECT * FROM tool_belt.toolbelt natural join tool_belt.tool_belt_roles natural join tool_belt.roletype WHERE username = $1 and password = $2',
             [username, password]);
         if (result.rowCount === 0) {
-            throw 'Invalid Credentials';
+            throw 'No data';
             
         } else {
             console.log(result.rows);
@@ -122,7 +125,7 @@ export async function daoGetToolbeltByUsernameAndPassword(username: string, pass
         if (e === 'Invalid Credentials') {
             throw {
                 status: 401,
-                message: 'Invalid Credentials'
+                message: 'The incoming token has expired'
             };
         } else {
             throw {
