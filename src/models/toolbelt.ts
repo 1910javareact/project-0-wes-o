@@ -1,14 +1,14 @@
 import { Role } from "./role"
 
-export class ToolBelt{
+export class ToolBelt {
     userid: number //primary key
-    firstname:string
-    lastname:string
-    email:string
-    username:string
-    password:string
+    firstname: string
+    lastname: string
+    email: string
+    username: string
+    password: string
     role: Role
-    constructor(userid:number, firstname:string, lastname:string, email:string, username:string, password:string, role: Role){
+    constructor(userid: number, firstname: string, lastname: string, email: string, username: string, password: string, role: Role) {
         this.userid = userid;
         this.firstname = firstname;
         this.lastname = lastname;
