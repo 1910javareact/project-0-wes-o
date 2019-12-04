@@ -31,6 +31,7 @@ export async function daoGetReimbursementsByStatusId(statusId: number): Promise<
     }
 }
 
+// Get reimbursement for a given UserId      
 export async function daoGetReimbursementsByUserId(userid: number): Promise<Reimbursement[]> {
     let client: PoolClient;
     try {

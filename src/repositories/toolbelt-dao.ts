@@ -49,7 +49,6 @@ export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
             
             //console.log(role + " role")
             switch (role) {
-                
                 case 'Admin':
                     roleid = 1;
                     break;
@@ -66,7 +65,6 @@ export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
         console.log(roleid + " roool")  
         await client.query('UPDATE tool_belt.tool_belt_roles set roleid=$1 where tool_belt_roles.userid = $2;',
             [  roleid, result.rows[0].userid]);
-        
         console.log(roleid + " roleId")
 
         t.userid = result.rows[0].userid;
@@ -119,7 +117,6 @@ export async function daoGetToolbeltByUsernameAndPassword(username: string, pass
             [username, password]);
         if (result.rowCount === 0) {
             throw 'No data';
-            
         } else {
             console.log(result.rows);
             return toolbeltDTOtoToolbelt(result.rows);

@@ -74,3 +74,4 @@ toolbeltRouter.patch('', [authorization(['Admin'])], async (req, res) => {
         res.status(e.status).send(e.message)
     }
 })
+
