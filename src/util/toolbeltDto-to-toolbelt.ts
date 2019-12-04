@@ -39,5 +39,4 @@ export function multiToolbeltDTOConvertor(tD: ToolBeltDTO[]): ToolBelt[] {
     }
     result.push(toolbeltDTOtoToolbelt(currentToolbelt));
     return result;
-
 }

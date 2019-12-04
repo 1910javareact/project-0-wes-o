@@ -33,6 +33,7 @@ export async function daoGetAllToolbelts(): Promise<ToolBelt[]> {
 }
 
 export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
+
    //insert into the toolbelt table and tool_belt_roles table
    //return the toolbelt object
     let client: PoolClient;
@@ -45,7 +46,7 @@ export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
         [t.firstname, t.lastname, t.email, t.username, t.password]);
         // 'for in' loop for key-value matches
         for (const role in t.role) {
-            console.log(role + " rolee")
+            console.log(role + " role")
             switch (role) {
                 case 'Admin':
                     roleid = 1;
@@ -114,8 +115,7 @@ export async function daoGetToolbeltByUsernameAndPassword(username: string, pass
         const result = await client.query('SELECT * FROM tool_belt.toolbelt natural join tool_belt.tool_belt_roles natural join tool_belt.roletype WHERE username = $1 and password = $2',
             [username, password]);
         if (result.rowCount === 0) {
-            throw 'No data';
-            
+            throw 'No data'; 
         } else {
             console.log(result.rows);
             return toolbeltDTOtoToolbelt(result.rows);
