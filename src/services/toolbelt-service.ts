@@ -1,18 +1,15 @@
 
-import { daoGetAllToolbelts, daoSaveOneToolbelt, daoGetToolbeltById, daoGetToolbeltByUsernameAndPassword } from "../repositories/toolbelt-dao";
+import { daoGetAllToolbelts, daoUpdateOneToolbelt, daoGetToolbeltById, daoGetToolbeltByUsernameAndPassword } from "../repositories/toolbelt-dao";
 import { ToolBelt } from "../models/toolbelt";
 
 //this layer is for processing requests both before and after getting data from database
 
 export async function getAllToolbelts():Promise<ToolBelt[]>{
-    //do some processing
-    let res = await daoGetAllToolbelts()
-    console.log(res + " -RES");
-    return res
+    return await daoGetAllToolbelts()
 }
 
-export async function saveOneToolbelt(t:ToolBelt):Promise<ToolBelt>{
-    return await daoSaveOneToolbelt(t)
+export async function updateOneToolbelt(t:ToolBelt):Promise<ToolBelt>{
+    return await daoUpdateOneToolbelt(t)
 }
 
 export async function getToolbeltById(userid:number):Promise<ToolBelt>{

@@ -1,6 +1,8 @@
 import express from 'express'
-import { getAllToolbelts, getToolbeltById } from '../services/toolbelt-service'
+import { getAllToolbelts, getToolbeltById, updateOneToolbelt } from '../services/toolbelt-service'
 import { authorization } from '../middleware/auth-middleware'
+import { ToolBelt } from '../models/toolbelt';
+import { Role } from '../models/role';
 
 //this file holds all of the toolbelt endpoints
 
@@ -8,88 +10,68 @@ import { authorization } from '../middleware/auth-middleware'
 export const toolbeltRouter = express.Router()
 
 //find all toolbelts --only for Finance-Manager
-let finManageAllToolbelts = toolbeltRouter.get('', async (req, res)=>{
-    let {username, password} = req.body   
-    try{
-        if (req.session.user.userid !== 2){
+toolbeltRouter.get('', [authorization(['Finance-Manager'])], async (req, res) => {
+    const { username, password } = req.body
+    try {
+        if (req.session.user.userid !== 2) {
             res.status(401).send('The incoming token has expired.')
         }
-        else{
+        else {
             let toolbelts = await getAllToolbelts()
             res.json(toolbelts)
             console.log(req.session.user.role + " role");
         }
-    }catch{     
-        //if (req.session.user.userid != 2){
-            if(!username || !password ){
-                res.status(400).send('Invalid Credentials')
-            }
-    }    
-});
-               
-//find a particular toolbelt by id --only for Finance-Manager
-let finManageAToolbelt = toolbeltRouter.get('/:id', async (req,res)=>{
-    let id = +req.params.id//from req.params, give me id
-    if(isNaN(id)){
-        res.sendStatus(400)
-    }else{
-        try{
-            let toolbelt = await getToolbeltById(id)
-            res.json(toolbelt)
-        }catch(e){
-            res.status(e.status).send(e.message)
-        }   
+    } catch{
+        if (!username || !password) {
+            res.status(400).send('Invalid Credentials')
+        }
     }
 });
 
+//find a particular toolbelt by id --only for Finance-Manager
+toolbeltRouter.get('/:id', [authorization(['Finance-Manager'])], async (req, res) => {
+    const id = +req.params.id//from req.params, give me id
+    if (isNaN(id)) {
+        res.sendStatus(400)
+    } else {
+        try {
+            let toolbelt = await getToolbeltById(id)
+            res.json(toolbelt)
+        } catch (e) {
+            res.status(e.status).send(e.message)
+        }
+    }
+});
 
-//Finance Manager 
-toolbeltRouter.get('', [ authorization(['Finance-Manager']), finManageAllToolbelts , finManageAToolbelt ]);
+//update a particular toolbelt --only for Admin
+toolbeltRouter.patch('', [authorization(['Admin'])], async (req, res) => {
+    const { body } = req
 
+    const newToolbelt = new ToolBelt(5, '', '', '', '', '', new Role(3, ``))
 
-// let userManagePersonalToolbelt = toolbeltRouter.get('/:id', async (req,res)=>{
-//     let userAccessIdOnly = +req.params.id; 
-    
-//     if(isNaN(userAccessIdOnly)){
-//         res.status(400).send('Invalid Credentials');
-//     }
-//     else if((userAccessIdOnly) !== (req.session.userid)){
-//         res.status(400).send("Invalid Credentials: " + req.session.userid);
-//     }
-//     if((userAccessIdOnly) === (req.session.userid)){
-//         res.status(200).send("Thanks for logging in: " + req.session.userid);
-//         try{
-//             let userAccessPersonalToolbelt = await getToolbeltById(userAccessIdOnly);
-//             res.json(userAccessPersonalToolbelt);
-//         }catch(e){
-//             res.status(e.status).send(e.message);
-//         }
-//     }
-// });
+    for (let key in newToolbelt) {
+        console.log(key + " key"); //
 
+        if (body[key] === undefined) {
 
-//Individual User
-//toolbeltRouter.get('/:id', [ authorization(['User']), userManagePersonalToolbelt ]);
+            console.log("in IF")
+            // res.status(400).send('All fields are required for a toolbelt')
 
+        } else {
+            newToolbelt[key] = body[key]
+        }
+    }
+    console.log(newToolbelt + " toolbelt");
 
-//REVISE for PATCH 
-// gardenRouter.post('', [ authorization(['Admin','Finance-Manager']),(req,res)=>{
-//     let {body} = req //destructuring
-//     let newT = new Garden('',0,0, '', '', [],) // add new Role(number,string 
-//     for(let key in newT){
-//         console.log(body[key]);
-        
-//         if(body[key] === undefined){
-//             res.status(400).send('Please include all toolbelt fields')
-//             break;
-//         }else{
-//             newT[key] = body[key]
-//         }
-//     }
-//     // if(saveOneGarden(newT)){
-//     //     res.sendStatus(201)
-//     // }else {
-//     //     res.sendStatus(500)
-//     // }
-//     return null;
-// }])
+    try {
+        console.log("Try")
+        const update = await updateOneToolbelt(newToolbelt)
+
+        res.status(201).json(update)
+
+    } catch (e) {
+        console.log("Catch")
+        res.status(e.status).send(e.message)
+    }
+})
+

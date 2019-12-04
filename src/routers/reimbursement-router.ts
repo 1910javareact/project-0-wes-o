@@ -1,68 +1,116 @@
 import express from 'express'
 import { authorization } from '../middleware/auth-middleware'
-import { postReimbursements, getReimbursementsByUserId } from '../services/reimbursement-service';
+import { getReimbursementsByUserId, saveOneReimbursement, getReimbursementsByStatusId } from '../services/reimbursement-service';
+import { Reimbursement } from '../models/reimbursement';
 
 export const reimbursementRouter = express.Router()
 
-//find all reimbursements 
-
-let finManageAllReimbursements = reimbursementRouter.post('/reimbursements', async (req, res)=>{
-    let {username, password} = req.body   
-    try{
-        if ((req.session.user.userid == 3) && (username || password)){
-            let post = req.session.user.reimbursement.description
-            let rms = await postReimbursements(post);
-            res.json(rms) 
-            console.log(req.session.user.role + " role");
-        }
-        else {
-            res.status(400).send('Invalid Credentials')
-        }
-    }catch{     
-        //if (req.session.user.userid != 2){
-        res.status(401).send('The incoming token has expired.')
-        
-    }    
-});
-
-//find a particular reimbursement by userId --only for Finance-Manager
-let finManageAReimbursement = reimbursementRouter.get('/author/userId/:id', async (req,res)=>{
-    let id = +req.params.id//from req.params, give me id
-    if(isNaN(id)){
-        res.sendStatus(400)
-    }else{
-        try{
-            let toolbelt = await getReimbursementsByUserId(id)
-            res.json(toolbelt)
-        }catch(e){
-            res.status(e.status).send(e.message)
-        }   
+//find a particular reimbursement by userId
+reimbursementRouter.get('/author/userId/:userid', [authorization(['Finance-Manager', 'Admin', 'User'])], async (req, res) => {
+    let userId = +req.params.userid
+    if (isNaN(userId)) {
+        res.status(400).send('Invalid ID')
     }
-});
 
-//Finance Manager 
+    if (req.session.user.role === 'Finance-Manager') {
+        try {
+            await getReimbursementsByUserId(userId)
+            const reimbursement = await getReimbursementsByUserId(userId)
 
-reimbursementRouter.get('/reimbursements', [ authorization(['Finance-Manager']), finManageAReimbursement ]);
-
-//All Users make reimbursements 
-reimbursementRouter.post('/reimbursements', [authorization(['User'])], async (req, res)=>{ 
-    //const {body} = req
-    let post = {
-            author: req.session.user.userid, 
-            amount: req.session.body.amount,
-            description: req.session.body.description,
-            type: req.session.body.type 
+            if (reimbursement) {
+                res.status(200).json(reimbursement)
+            }
+            else {
+                res.status(404).send('Reimbursement does not exist')
+            }
         }
-
-        try{
-            let rms = await postReimbursements(post);
-            res.json(rms) 
-            console.log(req.session.user.role + " role");
-        }catch (e){
-            res.status(400).send('Invalid Credentials')
+        catch (e) {
+            res.status(e.status).send(e.message)
         }
-    
-        //if (req.session.user.userid != 2){
-        //res.status(401).send('The incoming token has expired.')
-           
-});
+    } else {
+        try {
+            let reimbursement = await getReimbursementsByUserId(userId)
+
+            if (req.session.user.userid === reimbursement[0].author) {
+                res.status(200).json(reimbursement)
+            } else {
+                res.status(404).send('The session token has expired')
+            }
+        }
+        catch (e) {
+            res.status(401).send('Invalid Credentials')
+            res.status(e.status).send(e.message)
+        }
+    }
+})
+
+//find a particular reimbursement by userId
+reimbursementRouter.get('/statusId/:statusid', [authorization(['Finance-Manager'])], async (req, res) => {
+    let statusId = +req.params.statusid
+    if (isNaN(statusId)) {
+        res.status(400).send('Invalid ID')
+    }
+
+    if (req.session.user.role === 'Finance-Manager') {
+        try {
+            await getReimbursementsByStatusId(statusId)
+            let reimbursement = await getReimbursementsByStatusId(statusId)
+
+            if (reimbursement) {
+                res.status(200).json(reimbursement)
+            }
+            else {
+                res.status(404).send('Reimbursement does not exist')
+            }
+        }
+        catch (e) {
+            res.status(e.status).send(e.message)
+        }
+    } else {
+        try {
+            let reimbursement = await getReimbursementsByStatusId(statusId)
+            // if(req.session.user.userid === reimbursement.author ){
+            //     res.status(200).json(reimbursement)
+            // }
+
+            if (req.session.user.userid === reimbursement[0].author) {
+                res.status(200).json(reimbursement)
+            } else {
+                res.status(404).send('The session token has expired')
+            }
+        }
+        catch (e) {
+            res.status(401).send('Invalid Credentials')
+            res.status(e.status).send(e.message)
+        }
+    }
+})
+
+// send a particular reimbursement --For all 
+reimbursementRouter.post('', [authorization(['Finance-Manager', 'Admin', 'User'])], async (req, res) => {
+    let { body } = req
+
+    let newReimbursement = new Reimbursement(8, 0, 0, 0, 0, '', 0, 0, 0)
+    try {
+        for (let key in newReimbursement) {
+
+            if (body[key] === undefined) {
+
+                res.status(400).send('All fields are required for a reimbursement')
+
+            } else {
+                newReimbursement[key] = body[key]
+            }
+        }
+        let update = await saveOneReimbursement(newReimbursement)
+
+        if (update) {
+            res.status(201).send('Reimbursement Submitted')
+        } else {
+            res.status(404).send('Reimbursement does not exist')
+        }
+    } catch (e) {
+        res.status(e.status).send(e.message)
+    }
+})
+

@@ -1,4 +1,7 @@
 
+
+// This DTO can be used in different ways
+// For example, filter out field values in the Dto-to-R 
 export class ReimbursementDTO {
     reimbursementid: number;
     author: number;
@@ -8,7 +11,7 @@ export class ReimbursementDTO {
     description: string;
     resolver: number;
     statusid: number;
-    status: string;
+    status: number;
     typeid: number;
-    type: string;
+    type: number;
 }
