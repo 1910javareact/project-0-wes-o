@@ -9,11 +9,6 @@ import { reimbursementRouter } from './routers/reimbursement-router'
 //application build from express
 const app = express()
 
-//Initial message to Welcome!
-// app.use('/', (req, res)=>{ 
-//      res.json('Welcome!')
-// });
-
 //connect bodyparser to express 'app'
 app.use(bodyparser.json())
 

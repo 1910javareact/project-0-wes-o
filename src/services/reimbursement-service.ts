@@ -33,6 +33,8 @@ export async function getReimbursementsByUserId(userid:number):Promise<Reimburse
 
 export async function saveOneReimbursement(reimbursement:Reimbursement):Promise<Reimbursement>{
     try{
+        // console.log(reimbursement);
+        
         return await daoSaveOneReimbursement(reimbursement)
     }catch(e){
         throw e

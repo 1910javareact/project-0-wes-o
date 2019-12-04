@@ -3,6 +3,7 @@ import { ReimbursementDTO } from '../dtos/reimbursement-dto';
 import { Reimbursement } from '../models/reimbursement';
 
 export function reimbursementDTOtoReimbursement(r: ReimbursementDTO[]): Reimbursement {
+    // console.log(r)
     return new Reimbursement(
         r[0].reimbursementid, 
         r[0].author, 
@@ -11,8 +12,8 @@ export function reimbursementDTOtoReimbursement(r: ReimbursementDTO[]): Reimburs
         r[0].dateresolved, 
         r[0].description, 
         r[0].resolver, 
-        r[0].statusid, 
-        r[0].typeid
+        r[0].status, 
+        r[0].type
 )};
 
 // take an array of reimbursementDTO's and turn them into an array of objects

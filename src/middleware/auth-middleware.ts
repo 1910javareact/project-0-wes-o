@@ -16,7 +16,6 @@ export function authorization(authRoles:string[]){
             userRole = req.session.user.role  
             if(authRoles.includes(userRole)){
                 isAuth = true
-                //res.send("Thanks for logging in: " + req.session.user.role);
             }
         }
         if(isAuth){
