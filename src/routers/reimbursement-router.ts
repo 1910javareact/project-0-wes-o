@@ -6,46 +6,38 @@ import { Reimbursement } from '../models/reimbursement';
 export const reimbursementRouter = express.Router()
 
 //find a particular reimbursement by userId
-reimbursementRouter.get('/author/userId/:userid', [authorization(['Finance-Manager','Admin','User'])], async (req, res)=>{
+reimbursementRouter.get('/author/userId/:userid', [authorization(['Finance-Manager', 'Admin', 'User'])], async (req, res) => {
     let userId = +req.params.userid
-    if(isNaN(userId)){
+    if (isNaN(userId)) {
         res.status(400).send('Invalid ID')
     }
-    
-    if(req.session.user.role === 'Finance-Manager'){
-        try{
-            console.log("tryyy " + userId)
+
+    if (req.session.user.role === 'Finance-Manager') {
+        try {
             await getReimbursementsByUserId(userId)
             const reimbursement = await getReimbursementsByUserId(userId)
 
-            if(reimbursement){
-                console.log(reimbursement)
-                res.status(200).json(reimbursement) 
+            if (reimbursement) {
+                res.status(200).json(reimbursement)
             }
-            else{
+            else {
                 res.status(404).send('Reimbursement does not exist')
             }
         }
-        catch(e){
-            console.log(e);
+        catch (e) {
             res.status(e.status).send(e.message)
         }
-    }else{
-        try{
-            console.log("try")
+    } else {
+        try {
             let reimbursement = await getReimbursementsByUserId(userId)
-            // if(req.session.user.userid === reimbursement.author ){
-            //     res.status(200).json(reimbursement)
-            // }
-            
-            if(req.session.user.userid === reimbursement[0].author ){
-                res.status(200).json(reimbursement) 
-            }else{
+
+            if (req.session.user.userid === reimbursement[0].author) {
+                res.status(200).json(reimbursement)
+            } else {
                 res.status(404).send('The session token has expired')
             }
         }
-        catch(e){
-            console.log(e);
+        catch (e) {
             res.status(401).send('Invalid Credentials')
             res.status(e.status).send(e.message)
         }
@@ -53,82 +45,71 @@ reimbursementRouter.get('/author/userId/:userid', [authorization(['Finance-Manag
 })
 
 //find a particular reimbursement by userId
-reimbursementRouter.get('/statusId/:statusid', [authorization(['Finance-Manager'])], async (req, res)=>{
+reimbursementRouter.get('/statusId/:statusid', [authorization(['Finance-Manager'])], async (req, res) => {
     let statusId = +req.params.statusid
-    if(isNaN(statusId)){
+    if (isNaN(statusId)) {
         res.status(400).send('Invalid ID')
     }
-    
-    if(req.session.user.role === 'Finance-Manager'){
-        try{
-            console.log("tryyy " + statusId)
+
+    if (req.session.user.role === 'Finance-Manager') {
+        try {
             await getReimbursementsByStatusId(statusId)
             let reimbursement = await getReimbursementsByStatusId(statusId)
 
-            if(reimbursement){
-                console.log(reimbursement)
-                res.status(200).json(reimbursement) 
+            if (reimbursement) {
+                res.status(200).json(reimbursement)
             }
-            else{
+            else {
                 res.status(404).send('Reimbursement does not exist')
             }
         }
-        catch(e){
-            console.log(e);
+        catch (e) {
             res.status(e.status).send(e.message)
         }
-    }else{
-        try{
-            console.log("try")
+    } else {
+        try {
             let reimbursement = await getReimbursementsByStatusId(statusId)
             // if(req.session.user.userid === reimbursement.author ){
             //     res.status(200).json(reimbursement)
             // }
-            
-            if(req.session.user.userid === reimbursement[0].author ){
-                res.status(200).json(reimbursement) 
-            }else{
+
+            if (req.session.user.userid === reimbursement[0].author) {
+                res.status(200).json(reimbursement)
+            } else {
                 res.status(404).send('The session token has expired')
             }
         }
-        catch(e){
-            console.log(e);
+        catch (e) {
             res.status(401).send('Invalid Credentials')
             res.status(e.status).send(e.message)
         }
     }
 })
 
+// send a particular reimbursement --For all 
+reimbursementRouter.post('', [authorization(['Finance-Manager', 'Admin', 'User'])], async (req, res) => {
+    let { body } = req
 
-reimbursementRouter.post('',//[authorization(['Finance-Manager', 'Admin', 'User'])], 
-async (req, res) => {
-    let {body} = req
-    
+    let newReimbursement = new Reimbursement(8, 0, 0, 0, 0, '', 0, 0, 0)
+    try {
+        for (let key in newReimbursement) {
 
-    let newReimbursement = new Reimbursement(8,0,0,0,0,'',0,0,0)
-        try{    
-            for(let key in newReimbursement){
-                // console.log(key); //
-                
-                if(body[key] === undefined){
-                    // console.log(body[key]); //
-                    
-                    res.status(400).send('All fields are required for a reimbursement')
-                    
-                }else{
-                    newReimbursement[key] = body[key]
-                }
+            if (body[key] === undefined) {
+
+                res.status(400).send('All fields are required for a reimbursement')
+
+            } else {
+                newReimbursement[key] = body[key]
             }
-            // console.log(newReimbursement);
-            
-            let update = await saveOneReimbursement(newReimbursement)
-
-            if(update){
-                res.status(201).send('Update') 
-            }else{
-                res.status(404).send('Reimbursement does not exist')
-            }
-        }catch(e){
-            res.status(e.status).send(e.message)
         }
+        let update = await saveOneReimbursement(newReimbursement)
+
+        if (update) {
+            res.status(201).send('Reimbursement Submitted')
+        } else {
+            res.status(404).send('Reimbursement does not exist')
+        }
+    } catch (e) {
+        res.status(e.status).send(e.message)
+    }
 })
