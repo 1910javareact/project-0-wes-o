@@ -3,7 +3,7 @@ import session from 'express-session'
 //initial config for the session function
 const sess = {
     secret: 'secret',
-    cookie: {secure:false},
+    cookie: { secure: false },
     resave: false,
     saveUninitialized: false
 }

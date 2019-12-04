@@ -1,26 +1,25 @@
 
-export function authorization(authRoles:string[]){
+export function authorization(authRoles: string[]) {
 
-//middleware function generated using authRoles parameter
-    return (req,res,next)=>{
+    //middleware function generated using authRoles parameter
+    return (req, res, next) => {
         let isAuth = false
-        
+
         //Check login
-        if(!req.session.user){
-            console.log(req.session.user + " 888");
+        if (!req.session.user) {
             res.status(401).send('Please Login');
             return
         }
-        
-        for(let userRole of authRoles){
-            userRole = req.session.user.role  
-            if(authRoles.includes(userRole)){
+
+        for (let userRole of authRoles) {
+            userRole = req.session.user.role
+            if (authRoles.includes(userRole)) {
                 isAuth = true
             }
         }
-        if(isAuth){
+        if (isAuth) {
             next()
-        }else{
+        } else {
             res.status(403).send('You are unauthorized for this endpoint');
         }
     }
