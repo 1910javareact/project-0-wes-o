@@ -39,14 +39,17 @@ export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
     client = await connectionPool.connect();
     try {
         let roleid = 0;
-        await client.query('BEGIN'); //start a transaction
+        //await client.query('BEGIN'); //start a transaction
 
-        const result = await client.query('INSERT INTO tool_belt.toolbelt (firstname, lastname, email, username, "password") values ($1,$2,$3,$4,$5) RETURNING userid',
+        const result = await client.query('UPDATE tool_belt.toolbelt SET firstname=$1, lastname=$2, email=$3, username=$4, "password"=$5 WHERE toolbelt.userid = 5;',
         [t.firstname, t.lastname, t.email, t.username, t.password]);
+        // INSERT INTO tool_belt.toolbelt (firstname, lastname, email, username, "password") values ($1,$2,$3,$4,$5) RETURNING userid
         // 'for in' loop for key-value matches
         for (const role in t.role) {
-            console.log(role + " rolee")
+            
+            //console.log(role + " role")
             switch (role) {
+                
                 case 'Admin':
                     roleid = 1;
                     break;
@@ -56,12 +59,13 @@ export async function daoUpdateOneToolbelt(t: ToolBelt): Promise<ToolBelt> {
                 case 'User':
                     roleid = 3;
                     break;
-                default :
-                    break;
+                // default :
+                //     break;
             }
-        }    
-        await client.query('INSERT INTO tool_belt.tool_belt_roles VALUES($1,$2)',
-            [result.rows[0].userid, roleid ]);
+        } 
+        console.log(roleid + " roool")  
+        await client.query('UPDATE tool_belt.tool_belt_roles set roleid=$1 where tool_belt_roles.userid = $2;',
+            [  roleid, result.rows[0].userid]);
         
         console.log(roleid + " roleId")
 
